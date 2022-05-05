@@ -10,7 +10,7 @@ finish-args:
   - --share=ipc
   - --share=network
   - --socket=wayland
-  - --socket=x11
+  - --socket=fallback-x11
   - --device=dri
   - --env=XDG_CURRENT_DESKTOP=Unity
   - --talk-name=org.kde.StatusNotifierWatcher
@@ -49,8 +49,12 @@ modules:
       - type: script
         dest-filename: bitwarden.sh
         commands:
-          - export TMPDIR="$XDG_RUNTIME_DIR/app/$FLATPAK_ID"
-          - exec zypak-wrapper /app/Bitwarden/bitwarden "$@"
+          - export TMPDIR="${XDG_RUNTIME_DIR}/app/${FLATPAK_ID}"
+          - if [ "${XDG_SESSION_TYPE}" == "wayland" ]; then
+          - zypak-wrapper /app/Bitwarden/bitwarden --enable-features=UseOzonePlatform --ozone-platform=wayland "$@"
+          - else
+          - zypak-wrapper /app/Bitwarden/bitwarden "$@"
+          - fi
       - type: file
         path: com.bitwarden.desktop.metainfo.xml
 
